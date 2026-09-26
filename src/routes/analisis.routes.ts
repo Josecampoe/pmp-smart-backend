@@ -73,7 +73,7 @@ router.get('/', async (req: AuthenticatedRequest, res: Response<ApiResponse<Anal
         .eq('agricultor_id', agricultorId)
         .eq('estado', 'activo')
         .single();
-      
+
       if (!link) {
         res.status(403).json({ success: false, error: 'No tienes acceso a este agricultor.' });
         return;
@@ -224,8 +224,8 @@ router.post(
                 body.estado === 'alerta'
                   ? 'alerta'
                   : body.estado === 'observacion'
-                  ? 'observacion'
-                  : cultivoData.estado_fitosanitario,
+                    ? 'observacion'
+                    : cultivoData.estado_fitosanitario,
               updated_at: new Date().toISOString(),
             })
             .eq('id', body.cultivoId)

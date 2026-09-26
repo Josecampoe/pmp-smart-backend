@@ -43,9 +43,25 @@ router.get('/pendientes', async (req: AuthenticatedRequest, res: Response<ApiRes
       return;
     }
 
+    // Obtener agricultores vinculados al técnico
+    const { data: links } = await supabaseAdmin
+      .from('vinculos_tecnico_agricultor')
+      .select('agricultor_id')
+      .eq('tecnico_id', userId)
+      .eq('estado', 'activo');
+
+    const linkedIds = links?.map((l: any) => l.agricultor_id) || [];
+
+    if (linkedIds.length === 0) {
+      res.json({ success: true, data: [] });
+      return;
+    }
+
+    // Buscar análisis pendientes solo de esos agricultores
     const { data, error } = await supabaseAdmin
       .from('analisis')
       .select('*')
+      .in('usuario_id', linkedIds)
       .eq('estado_revision', 'pendiente')
       .order('created_at', { ascending: false });
 

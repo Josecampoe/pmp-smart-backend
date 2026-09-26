@@ -28,29 +28,48 @@ router.get('/', async (req: AuthenticatedRequest, res: Response<ApiResponse<Cult
   try {
     const userId = req.userId!;
     const agricultorId = req.query.agricultor_id as string;
-    let targetId = userId;
+    
+    // Obtener rol del usuario
+    const { data: perfil } = await supabaseAdmin.from('perfiles').select('rol').eq('id', userId).single();
+    const isTecnico = perfil?.rol === 'tecnico';
 
-    if (agricultorId) {
-      // Verificar vinculación
-      const { data: link } = await supabaseAdmin
-        .from('vinculos_tecnico_agricultor')
-        .select('*')
-        .eq('tecnico_id', userId)
-        .eq('agricultor_id', agricultorId)
-        .eq('estado', 'activo')
-        .single();
-      
-      if (!link) {
-        res.status(403).json({ success: false, error: 'No tienes acceso a este agricultor.' });
-        return;
+    let userIdsToFetch = [userId];
+
+    if (isTecnico) {
+      if (agricultorId) {
+        // Verificar vinculación
+        const { data: link } = await supabaseAdmin
+          .from('vinculos_tecnico_agricultor')
+          .select('*')
+          .eq('tecnico_id', userId)
+          .eq('agricultor_id', agricultorId)
+          .eq('estado', 'activo')
+          .single();
+        
+        if (!link) {
+          res.status(403).json({ success: false, error: 'No tienes acceso a este agricultor.' });
+          return;
+        }
+        userIdsToFetch = [agricultorId];
+      } else {
+        // Traer todos los de agricultores vinculados
+        const { data: links } = await supabaseAdmin
+          .from('vinculos_tecnico_agricultor')
+          .select('agricultor_id')
+          .eq('tecnico_id', userId)
+          .eq('estado', 'activo');
+        userIdsToFetch = links?.map((l: any) => l.agricultor_id) || [];
+        if (userIdsToFetch.length === 0) {
+          res.json({ success: true, data: [] });
+          return;
+        }
       }
-      targetId = agricultorId;
     }
 
     const { data, error } = await supabaseAdmin
       .from('cultivos')
       .select('*')
-      .eq('usuario_id', targetId)
+      .in('usuario_id', userIdsToFetch)
       .order('created_at', { ascending: false });
 
     if (error) {
