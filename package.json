@@ -1,0 +1,29 @@
+{
+  "name": "pmp-smart-api",
+  "version": "1.0.0",
+  "description": "API REST para PMP Smart - Detección de Punta Morada de la Papa",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "tsx src/index.ts",
+    "build": "tsc",
+    "serve": "node dist/index.js"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "helmet": "^8.1.0",
+    "multer": "^1.4.5-lts.2"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.2",
+    "@types/multer": "^1.4.12",
+    "@types/node": "^22.14.0",
+    "tsx": "^4.19.4",
+    "typescript": "~6.0.3"
+  },
+  "private": true
+}
